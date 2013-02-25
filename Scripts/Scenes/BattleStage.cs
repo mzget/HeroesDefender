@@ -14,6 +14,8 @@ public class BattleStage : Mz_BaseScene {
 	public GameObject backgroup_group_transform;
 	private bool _updatable = true;
 
+	public OrthographicTilemapEngine tilemapEngine;
+
 	#region <@-- Event Handles Data section.
 
 	public static event EventHandler newGameStartup_Event;
@@ -34,7 +36,13 @@ public class BattleStage : Mz_BaseScene {
 	// Use this for initialization
 	void Start ()
     {
-
+		StartCoroutine_Auto(this.InitializeIsoTilemapEngine());
+	}
+	
+	IEnumerator InitializeIsoTilemapEngine ()
+	{
+		tilemapEngine = this.GetComponent<OrthographicTilemapEngine>();
+		yield return StartCoroutine(tilemapEngine.CreateTilemap());
 	}
 	
     #region <@-- Tutor system.
@@ -54,7 +62,7 @@ public class BattleStage : Mz_BaseScene {
 
     #endregion
 
-	protected new IEnumerator InitializeAudio ()
+	protected new IEnumerator InitializeAudio()
 	{
     	base.InitializeAudio();
 		

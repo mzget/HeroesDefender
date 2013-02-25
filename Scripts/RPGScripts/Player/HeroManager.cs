@@ -1,34 +1,31 @@
 using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(AIPlayer))]
 public class HeroManager : Base_CharacterBeh {
 
     public GUISkin mainInterface;
     public GUISkin heroSkin;
     public Texture2D hero_icon;
 
-	private AIPlayer player;
 	private Vector3 targetPos;
-	private float speed;
+	private float speed = 20;
+	private float distanceToTarget;
+	private bool _IsStayWithMonster;
 
 
-    void Awake()
-    {
-        maxHP = 1000000;
-        hp = maxHP;
-    }
+	void Awake() {
+		iTween.Init (this.gameObject);
+		iTween.Defaults.easeType = iTween.EaseType.linear;
+	}
 
     // Use this for initialization
 	protected override void Start ()
 	{
 		base.Start ();
-
-		this.gameObject.name = name;
 		
-		//        nameBar = Instantiate(Resources.Load("PlayerName", typeof(GameObject))) as GameObject;
-		//        textMeshName = nameBar.GetComponent<TextMesh>();
-		player = this.gameObject.GetComponent<AIPlayer>();		
+		maxHP = 1000;
+		hp = maxHP;
+		this.gameObject.name = name;
 	}
 
     // Update is called once per frame
@@ -36,45 +33,91 @@ public class HeroManager : Base_CharacterBeh {
 	{
 		base.Update (); 
 
-		// Mouse Click To Repath.
-		if (Input.GetMouseButtonDown(0))
-		{
-			if(this.currentCharacterStatus == CharacterState.Active) {
-				if (Input.touchCount >= 1)
-					targetPos = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position);
-				else 
-					targetPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-				
-				if (targetPos.x > this.transform.position.x)
+		this.UpdateInput ();
+
+		if (this.animState == AnimationState.attack) {
+			if(targetEnemy) {
+				if (targetEnemy.transform.position.x > this.transform.position.x)
 					animatedSprite.scale = new Vector3(-1, 1,1);
 				else
 					animatedSprite.scale = new Vector3(1, 1, 1);
-
-				
-				this.animState = AnimationState.walk;
-				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Walk);
 			}
 		}
-
-		if (this.currentCharacterStatus == CharacterState.Active && this.animState == AnimationState.walk) {
-			speed = 0.6f;
-			Vector3 newPosition = new Vector3 (targetPos.x, targetPos.y, this.transform.position.z);
-			this.transform.position = Vector3.Lerp (this.transform.position, newPosition, Time.deltaTime * speed);
-		}
-		
-		float remain_distance = Vector2.Distance(this.transform.position, targetPos);
-		if(remain_distance < 3) {
-			if(this.animState != AnimationState.idle) {
-				this.animState = AnimationState.idle;
-				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Idle);
+		else {
+			if(targetEnemy) {
+				targetPos = targetEnemy.transform.position;
 			}
 		}
 	}
+	
+	void UpdateInput ()
+	{
+		if (Input.touchCount == 1) {
+			Ray ray = Camera.main.ScreenPointToRay (stageManager.touch.position);
+			RaycastHit rayHit;
+			currentPhaseState = stageManager.touch.phase;
+			
+			if (Physics.Raycast (ray, out rayHit)) {
+				Debug.Log (rayHit.collider.name);
+			} else {
+				
+			}
+			
+			lastPhaseState = currentPhaseState;
+		}
+		
+		// Mouse Click To Repath.
+		if (Input.GetMouseButtonDown (0)) {
+			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+			RaycastHit rayHit;
+			
+			if (Physics.Raycast (ray, out rayHit)) {
+				if (rayHit.collider.tag == "WalkingTable" || rayHit.collider.tag == "Monster") {					
+					if (this.currentCharacterStatus == CharacterState.Active) {							//<@-- Walk to mouse position or touch position.
+//						if (Input.touchCount >= 1)
+//							targetPos = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position);
+//						else 
+//							targetPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-    public void ReceiveDamage(float damage)
-    {
-        hp -= damage;
-    }
+						if (rayHit.collider.tag == "Monster") {
+							targetEnemy = rayHit.collider.gameObject;
+							if (targetEnemy.transform.position.x > 150) {
+								targetEnemy = null;
+								return;
+							}
+						} else if (rayHit.collider.tag == "WalkingTable") {
+							targetEnemy = null;
+						}
+
+						targetPos = rayHit.collider.transform.position;
+						if (targetPos.x > this.transform.position.x)
+							animatedSprite.scale = new Vector3 (-1, 1, 1);
+						else
+							animatedSprite.scale = new Vector3 (1, 1, 1);
+						
+						distanceToTarget = Vector2.Distance (this.transform.position, targetPos);
+						
+						this.animState = AnimationState.walk;
+						this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Walk);
+					}
+				}
+			}
+		}
+		
+		if (this.currentCharacterStatus == CharacterState.Active && this.animState == AnimationState.walk) {
+			iTween.MoveUpdate (this.gameObject, iTween.Hash ("position", targetPos, "time", distanceToTarget / speed));
+//			Vector3 newPosition = new Vector3 (targetPos.x, targetPos.y, targetPos.z);
+//			this.transform.position = Vector3.Lerp (this.transform.position, newPosition, Time.deltaTime * speed);
+
+			float remain_distance = Vector2.Distance (this.transform.position, targetPos);
+			if (remain_distance < 1) {
+				if (this.animState != AnimationState.idle) {
+					this.animState = AnimationState.idle;
+					this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Idle);
+				}
+			}
+		}
+	}
 
     #region <@-- Handle Input Events.
 	
@@ -97,16 +140,22 @@ public class HeroManager : Base_CharacterBeh {
 
 	#region <@-- Handle Collision Event.
 	
-	void OnTriggerEnter(Collider collider)
+	void OnTriggerEnter (Collider collider)
 	{
-		Debug.Log (collider.name);
-
-		if (collider.tag == "Monster")
-		{
-			if(this.animState != AnimationState.attack) {
-				this.animState = AnimationState.attack;
-				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Attack);
-			}   
+		if (collider.tag == "Monster") {
+			if (targetEnemy == null) {
+				targetEnemy = collider.gameObject;
+				if (this.animState != AnimationState.attack) {
+					this.animState = AnimationState.attack;
+					this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+					this.animatedSprite.animationCompleteDelegate = (sprite, clipId) => {
+						targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
+						this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+					}; 
+				}   
+			}
+		
+			Debug.Log (collider.tag);
 		}
 	}
 	
@@ -114,22 +163,16 @@ public class HeroManager : Base_CharacterBeh {
 	{
 //		if (collider.tag == "Monster")
 //		{
-//			if (monsters.Contains(collider.gameObject) == false)
-//				monsters.Add(collider.gameObject);
+//			_IsStayWithMonster = true;
 //		}
 	}
 	
 	void OnTriggerExit(Collider collider)
 	{
-//		if (collider.tag == "Monster")
-//		{
-//			monsters.Remove(collider.gameObject);
-//	    if (monsterATK)
-//	    {
-//	        monsterATK.SendMessage("CloseMonsterName", SendMessageOptions.RequireReceiver);
-//	        monsterATK = null;
-//	    }
-//		}
+		if (collider.tag == "Monster")
+		{
+			_IsStayWithMonster = false;
+		}
 	}
 	
 	#endregion

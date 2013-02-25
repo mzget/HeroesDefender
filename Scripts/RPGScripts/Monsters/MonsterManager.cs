@@ -3,18 +3,12 @@ using System.Collections;
 
 public class MonsterManager : Base_CharacterBeh {
 
-	private bool _isAlive = true;
-	public bool _IsAlive {
-		get { return _isAlive; }
-		set { _isAlive = value; }
-	}
+	public bool _isAlive = true;
+	private bool _isStarting = false;
 	
 	private Vector2 hpBarSize;
-    private AIMonster aiMonster;
-	private IDMonster idMonster;
-	
-    private AnimationState animationSprite;
-	public AnimationState AnimatingSprite{ get {return animationSprite;} set{animationSprite = value;}}
+//    private AIMonster aiMonster;
+//	private IDMonster idMonster;
 	
 
 	// Use this for initialization
@@ -24,16 +18,30 @@ public class MonsterManager : Base_CharacterBeh {
 
 		this._isAlive = true;
 
-		aiMonster = this.gameObject.GetComponent<AIMonster>();
-		idMonster = this.gameObject.GetComponent<IDMonster>();
+//		aiMonster = this.gameObject.GetComponent<AIMonster>();
+//		idMonster = this.gameObject.GetComponent<IDMonster>();
+	}
+
+	public void StartWalking ()
+	{
+		if(_isStarting == false) {
+			if (this.animState != AnimationState.walk) {
+				this.animState = AnimationState.walk;
+				this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Walk);
+			}
+		}
 		
-//		hpBarSprite = hpBar_Ins.GetComponent<tk2dSprite>() as tk2dSprite;
+		_isStarting = true;
 	}
 	
 	// Update is called once per frame
 	protected override void Update ()
 	{
 		base.Update ();
+		
+		if(_isStarting && this.animState == AnimationState.walk) {
+			this.transform.Translate(Vector3.left * WaveManager.EnemySpeed, Space.World);
+		}
 		
 		/// Check Dying Event.
 //		if (idMonster.hp <= 0 && _isAlive)
@@ -67,34 +75,66 @@ public class MonsterManager : Base_CharacterBeh {
 	}
 
     #endregion
+	
+	#region <@-- Handle Collision Event.
+	
+	void OnTriggerEnter (Collider coll)
+	{
+		if (coll.tag == "Hero") {
+			if (targetEnemy == null) {
+				targetEnemy = coll.gameObject;
+				if (this.animState != AnimationState.attack) {
+					this.animState = AnimationState.attack;
+					this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+					this.animatedSprite.animationCompleteDelegate = (sprite, clipId) => {
+						targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
+						this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+					}; 
+				}   
+			}
+			
+			Debug.Log (coll.tag);
+		}
+		else if(coll.tag == "Monster") {
+
+		}
+	}
+	
+	void OnTriggerStay(Collider collider)
+	{
+		//		if (collider.tag == "Monster")
+		//		{
+		//			_IsStayWithMonster = true;
+		//		}
+	}
+	
+	void OnTriggerExit(Collider collider)
+	{
+		if (collider.tag == "Monster")
+		{
+		}
+	}
+	
+	#endregion
 
     /// <summary>
     /// HookUp By Simple Event.
     /// </summary>
     public void ShowMonsterName()
     {
-        textMeshName.text = idMonster.fixName;
-
+//        textMeshName.text = idMonster.fixName;
 //        textMeshName.transform.position = this.gameObject.transform.position + Vector3.up * ((this.animationSprite.size.y/2) + 40);
+
 //        /// Set PowerBar Position.
 //        hpBar_Ins.active = true;
 //        powerBar_Ins.active = true;
 //        powerBarSprite.transform.position = this.transform.position + new Vector3(0, (this.animationSprite.size.y/2) + 20, 0);
 //        hpBarSprite.transform.position = this.transform.position + new Vector3(-50, (this.animationSprite.size.y/2) + 20, 0);
     }
-
-    public void CloseMonsterName()
-    {
-        try
-        {
-            textMeshName.text = string.Empty;
-        }
-        catch { }
-	}
 	
     public void ReceiveDamage(int r_Damage)
     {
-    	idMonster.hp -= r_Damage;
+//    	idMonster.hp -= r_Damage;
         SetHealth();
     }
 
@@ -103,7 +143,7 @@ public class MonsterManager : Base_CharacterBeh {
 //        if (hpBarSprite)
 //        {
 //            float hpBarScale = idMonster.hp * 100f / idMonster.maxHP;
-////            hpBarSprite.size = new Vector2(hpBarScale, hpBarSprite.size.y);
+//            hpBarSprite.size = new Vector2(hpBarScale, hpBarSprite.size.y);
 //        }
     }
 }

@@ -9,11 +9,12 @@ public class WaveManager : MonoBehaviour {
 	public float startTime;
 	public int arrWidth;
 	public int arrHeight;
-	public static float enemySpeed = -0.3f;
-	public const string PATH_OF_ENEMY_01 = "Prototypes/Monsters/Char_01";
+	public static float EnemySpeed = 0.3f;
+	public const string PATH_OF_ENEMY_01 = "Prototypes/Monsters/Barbarian";
 	public bool EnableUpdate = true;
 	
-	private float [] yAxis = new float[]{ -35f, -45f, -55f, -65f, -80f};
+	private float [] yAxis = new float[] { -16f, -32f, -48f, -64f, -80f};
+	private float [] zAxis = new float[] { -3f, -4f, -5f, -6f, -7f};
 	private int [,] wavePattern = new int[,] 
 	{
 		{1 ,0 ,1 ,0 ,1 ,1 ,1 ,1 },
@@ -57,7 +58,7 @@ public class WaveManager : MonoBehaviour {
 		WaveUpdate(wavePattern);
 	}
 	
-	void WaveUpdate(int [,] pattern){
+	void WaveUpdate(int [,] pattern) {
 		if(EnableUpdate)
 		{
 			float elapsed = Time.time - startTime;
@@ -66,12 +67,13 @@ public class WaveManager : MonoBehaviour {
 			//int minutes = (int)(elapsed / 60);
 	 		//int seconds = (int)(elapsed % 60);
 			//Debug.Log("elapsed : "+elapsed+" hour : "+hours+" minute : "+minutes+" second : "+seconds);
-			for(int i =0; i < arrWidth ; i++){
-				for(int j=0; j < arrHeight; j++){
-					if(elapsed>(j*delayPerWave+initDelay)){
+			for(int i =0; i < arrWidth ; i++) {
+				for(int j=0; j < arrHeight; j++) {
+					if(elapsed>(j*delayPerWave+initDelay)) {
 						if(pattern[i,j]!=0){
-						GameObject updateEnemy = GameObject.Find("Enemy"+((arrWidth*j)+i));
-						updateEnemy.transform.Translate(enemySpeed,0f,0f);
+							GameObject updateEnemy = GameObject.Find("Enemy"+((arrWidth*j)+i));
+//							updateEnemy.transform.Translate(EnemySpeed,0f,0f);
+							updateEnemy.GetComponent<MonsterManager>().StartWalking();
 						}
 					}
 					index++;
@@ -84,14 +86,14 @@ public class WaveManager : MonoBehaviour {
 		}
 	}
 	
-	void WaveInit(int [,] pattern,GameObject objGroup){
+	void WaveInit(int [,] pattern, GameObject objGroup){
 		for(int i =0; i < arrWidth ; i++){
 			for(int j=0; j < arrHeight; j++){
 				if(pattern[i,j]!=0){
 					GameObject clone = Instantiate(Resources.Load(PATH_OF_ENEMY_01, typeof(GameObject))) as GameObject;
 					clone.name = "Enemy"+((arrWidth*j)+i);
 					clone.transform.parent = objGroup.transform;
-					clone.transform.position = new Vector3(330f, yAxis[i], -2f);
+					clone.transform.position = new Vector3(330f, yAxis[i], zAxis[i]);
 					
 					clone.tag = "Monster";
 					MonsterManager cloneBeh = clone.GetComponent<MonsterManager>();
@@ -101,9 +103,9 @@ public class WaveManager : MonoBehaviour {
 		}
 	}
 	
-	void ZeroInit(int [,] pattern){
-		for(int i=0; i < arrWidth; i++){
-			for(int j=0; j < arrHeight; j++){
+	void ZeroInit(int [,] pattern) {
+		for(int i=0; i < arrWidth; i++) {
+			for(int j=0; j < arrHeight; j++) {
 				pattern[i,j] = 0;
 			}
 		}
