@@ -1,13 +1,16 @@
 using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(AIPlayer))]
 public class HeroManager : Base_CharacterBeh {
 
     public GUISkin mainInterface;
     public GUISkin heroSkin;
     public Texture2D hero_icon;
 
-    private AIPlayer player;
+	private AIPlayer player;
+	private Vector3 targetPos;
+	private float speed;
 
 
     void Awake()
@@ -25,16 +28,47 @@ public class HeroManager : Base_CharacterBeh {
 		
 		//        nameBar = Instantiate(Resources.Load("PlayerName", typeof(GameObject))) as GameObject;
 		//        textMeshName = nameBar.GetComponent<TextMesh>();
-		player = this.gameObject.GetComponent<AIPlayer>();
-		
-		// To put our walking man on screen we create an animting sprite object
-		animatingSprite = this.gameObject.GetComponent<tk2dAnimatedSprite>();
+		player = this.gameObject.GetComponent<AIPlayer>();		
 	}
 
     // Update is called once per frame
 	protected override void Update ()
 	{
-		base.Update ();
+		base.Update (); 
+
+		// Mouse Click To Repath.
+		if (Input.GetMouseButtonDown(0))
+		{
+			if(this.currentCharacterStatus == CharacterState.Active) {
+				if (Input.touchCount >= 1)
+					targetPos = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position);
+				else 
+					targetPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+				
+				if (targetPos.x > this.transform.position.x)
+					animatedSprite.scale = new Vector3(-1, 1,1);
+				else
+					animatedSprite.scale = new Vector3(1, 1, 1);
+
+				
+				this.animState = AnimationState.walk;
+				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Walk);
+			}
+		}
+
+		if (this.currentCharacterStatus == CharacterState.Active && this.animState == AnimationState.walk) {
+			speed = 0.6f;
+			Vector3 newPosition = new Vector3 (targetPos.x, targetPos.y, this.transform.position.z);
+			this.transform.position = Vector3.Lerp (this.transform.position, newPosition, Time.deltaTime * speed);
+		}
+		
+		float remain_distance = Vector2.Distance(this.transform.position, targetPos);
+		if(remain_distance < 3) {
+			if(this.animState != AnimationState.idle) {
+				this.animState = AnimationState.idle;
+				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Idle);
+			}
+		}
 	}
 
     public void ReceiveDamage(float damage)
@@ -46,12 +80,12 @@ public class HeroManager : Base_CharacterBeh {
 	
 	protected override void OnTouchDown ()
 	{
-		this.currentCharacterStatus = CharacterStatus.Active;
+		this.currentCharacterStatus = CharacterState.Active;
 		this.hp_bar_status.SetActive (true);
 		
 		foreach (HeroManager item in CharacterManager.Arr_characterManager) {
 			if(item != this) {
-				item.currentCharacterStatus = CharacterStatus.Idle;
+				item.currentCharacterStatus = CharacterState.Idle;
 				item.hp_bar_status.SetActive(false);
 			}	
 		}
@@ -59,7 +93,41 @@ public class HeroManager : Base_CharacterBeh {
 		base.OnTouchDown ();
 	}
 
-    #endregion
+	#endregion
+
+	#region <@-- Handle Collision Event.
+	
+	void OnTriggerEnter(Collider collider)
+	{
+		if (collider.tag == "Monster")
+		{
+			_follow = false;   
+		}
+	}
+	
+	void OnTriggerStay(Collider collider)
+	{
+		if (collider.tag == "Monster")
+		{
+			if (monsters.Contains(collider.gameObject) == false)
+				monsters.Add(collider.gameObject);
+		}
+	}
+	
+	void OnTriggerExit(Collider collider)
+	{
+		if (collider.tag == "Monster")
+		{
+			monsters.Remove(collider.gameObject);
+			//            if (monsterATK)
+			//            {
+			//                monsterATK.SendMessage("CloseMonsterName", SendMessageOptions.RequireReceiver);
+			//                monsterATK = null;
+			//            }
+		}
+	}
+	
+	#endregion
 
 	/**
     void OnGUI()
