@@ -4,30 +4,12 @@ using System.Collections.Generic;
 
 public class AIPlayer : MonoBehaviour
 {
-    /** Target to move to */
-    public Transform target;
-    public float pickNextWaypointDistance = 1F;
-	
-    private float atkSpeed = 0;
-	public float ATKSpeed { get{ return atkSpeed; } set{ atkSpeed = value; } }
-
-    public enum AnimationState : int {
-		idle = 0,
-		walk,
-		attack,
-		dead,
-		skill_1
-    };
-    private AnimationState animState;
-    public AnimationState AnimState { get { return animState; } set { animState = value; } }
-
     private bool _follow = false;
     private int calculationDamage;
 
     private List<GameObject> monsters = new List<GameObject>();
     private GameObject monsterATK;
 	private MonsterManager monsterManager;
-    private tk2dAnimatedSprite animatingSprite;
 
 
  
@@ -47,16 +29,15 @@ public class AIPlayer : MonoBehaviour
     // Use this for initialization
     public void Start()
     {
-        animatingSprite = this.gameObject.GetComponent<tk2dAnimatedSprite>();
-		animatingSprite.animationCompleteDelegate = OnAnimationFinish;
+
     }	
 
     // Update is called once per frame.
-    public void Update()
+/*
+	public void U()
     {
         #region Calculation WayPoint.
-		
-		/** 
+        
         //Change target to the next waypoint if the current one is close enough
         Vector3 currentWaypoint = path[pathIndex];
         currentWaypoint.z = tr.position.z;
@@ -81,9 +62,7 @@ public class AIPlayer : MonoBehaviour
             currentWaypoint = path[pathIndex];
             currentWaypoint.z = tr.position.z;
         }
-		*/
 
-		/**
                 /// Rotate towards the target 
                 tr.rotation = Quaternion.Slerp(tr.rotation, Quaternion.LookRotation(new Vector3(dir.x, dir.y, 0)), rotationSpeed * Time.deltaTime);
                 tr.eulerAngles = new Vector3(0, 0, tr.eulerAngles.z);
@@ -94,46 +73,31 @@ public class AIPlayer : MonoBehaviour
                 forwardDir *= Mathf.Clamp01 (Vector3.Dot (dir, tr.forward));
 
                 controller.SimpleMove(forwardDir);
-        **/
 		
 		#endregion
-        /// Mouse Click To Repath.
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-//            _follow = true;
-//
-//            OTAnimatingSprite animating = this.gameObject.GetComponent<OTAnimatingSprite>();
-//
-//            if (OT.view.mouseWorldPosition.x > this.transform.position.x)
-//            { animating.flipHorizontal = true; }
-//            else
-//            { animating.flipHorizontal = false; }
-//
-//            StartCoroutine(WaitToRepath());
-        }
 
         /// AI Follow WayPoint.
 //        Vector3 dir = currentWaypoint - tr.position;
-		float speed = 0;
-        if (_follow)
-        {
-            if (animState != AnimationState.walk) 
-            {
-                animState = AnimationState.walk;
-                this.PlayAnimation();
-            }
-
-            speed = Time.deltaTime * 60f;
+//		float speed = 0;
+//        if (_follow)
+//        {
+//            if (animState != AnimationState.walk) 
+//            {
+//                animState = AnimationState.walk;
+//                this.PlayAnimation();
+//            }
+//
+//            speed = Time.deltaTime * 60f;
 //            this.transform.position = Vector3.Lerp(tr.position, currentWaypoint, speed);
-        }
+//        }
 
         /// Keycode To Skill.
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            _follow = false;
-//            animatingSprite.PlayOnce("Skill_1");
-			animState = AnimationState.skill_1;
-        }
+//        if (Input.GetKeyDown(KeyCode.Q))
+//        {
+//            _follow = false;
+////            animatingSprite.PlayOnce("Skill_1");
+//			animState = AnimationState.skill_1;
+//        }
 
         /// MonsterAtk && Monster manager.
         if (monsterATK == null)
@@ -186,40 +150,7 @@ public class AIPlayer : MonoBehaviour
 			monsterATK = null;
 		}
     }
-
-    #region All Collision Event.
-
-    void OnTriggerEnter(Collider collider)
-    {
-        if (collider.tag == "Monster")
-        {
-            _follow = false;   
-        }
-    }
-
-    void OnTriggerStay(Collider collider)
-    {
-        if (collider.tag == "Monster")
-        {
-            if (monsters.Contains(collider.gameObject) == false)
-				monsters.Add(collider.gameObject);
-        }
-    }
-
-    void OnTriggerExit(Collider collider)
-    {
-        if (collider.tag == "Monster")
-        {
-            monsters.Remove(collider.gameObject);
-//            if (monsterATK)
-//            {
-//                monsterATK.SendMessage("CloseMonsterName", SendMessageOptions.RequireReceiver);
-//                monsterATK = null;
-//            }
-        }
-    }
-
-    #endregion
+*/
 
     public void PlayAnimation()
     {
@@ -236,21 +167,21 @@ public class AIPlayer : MonoBehaviour
 
     /** The OnAnimationFinish delegate will be called when an animation or **/
     /** animation frameset finishes playing. **/
-	public void OnAnimationFinish(tk2dAnimatedSprite sprite, int clipId) {
-		if(animState == AnimationState.skill_1) {
-			if(monsterATK && monsterManager._IsAlive) 
-            monsterManager.ReceiveDamage(320);
-			
-	    	animState = AnimationState.idle;
-	    	this.PlayAnimation();
-		}
-		
-		if(animState == AnimationState.attack) {
-        if(monsterATK&&monsterManager)
-            monsterManager.ReceiveDamage(calculationDamage);
-
-			animState = AnimationState.idle;
-	        this.PlayAnimation();
-		}
-    }
+//	public void OnAnimationFinish(tk2dAnimatedSprite sprite, int clipId) {
+//		if(animState == AnimationState.skill_1) {
+//			if(monsterATK && monsterManager._IsAlive) 
+//            monsterManager.ReceiveDamage(320);
+//			
+//	    	animState = AnimationState.idle;
+//	    	this.PlayAnimation();
+//		}
+//		
+//		if(animState == AnimationState.attack) {
+//        if(monsterATK&&monsterManager)
+//            monsterManager.ReceiveDamage(calculationDamage);
+//
+//			animState = AnimationState.idle;
+//	        this.PlayAnimation();
+//		}
+//    }
 }

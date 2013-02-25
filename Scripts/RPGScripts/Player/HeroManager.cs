@@ -99,32 +99,37 @@ public class HeroManager : Base_CharacterBeh {
 	
 	void OnTriggerEnter(Collider collider)
 	{
+		Debug.Log (collider.name);
+
 		if (collider.tag == "Monster")
 		{
-			_follow = false;   
+			if(this.animState != AnimationState.attack) {
+				this.animState = AnimationState.attack;
+				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Attack);
+			}   
 		}
 	}
 	
 	void OnTriggerStay(Collider collider)
 	{
-		if (collider.tag == "Monster")
-		{
-			if (monsters.Contains(collider.gameObject) == false)
-				monsters.Add(collider.gameObject);
-		}
+//		if (collider.tag == "Monster")
+//		{
+//			if (monsters.Contains(collider.gameObject) == false)
+//				monsters.Add(collider.gameObject);
+//		}
 	}
 	
 	void OnTriggerExit(Collider collider)
 	{
-		if (collider.tag == "Monster")
-		{
-			monsters.Remove(collider.gameObject);
-			//            if (monsterATK)
-			//            {
-			//                monsterATK.SendMessage("CloseMonsterName", SendMessageOptions.RequireReceiver);
-			//                monsterATK = null;
-			//            }
-		}
+//		if (collider.tag == "Monster")
+//		{
+//			monsters.Remove(collider.gameObject);
+//	    if (monsterATK)
+//	    {
+//	        monsterATK.SendMessage("CloseMonsterName", SendMessageOptions.RequireReceiver);
+//	        monsterATK = null;
+//	    }
+//		}
 	}
 	
 	#endregion

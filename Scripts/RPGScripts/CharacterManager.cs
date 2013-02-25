@@ -16,8 +16,9 @@ public class CharacterManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		for (int i = 0; i < 3; i++) {
-			GameObject newHero = (Instantiate(barbarian)) as GameObject;
+			GameObject newHero = Instantiate(barbarian) as GameObject;
 			newHero.transform.position = spawnPoints[i].position;
+			newHero.tag = "Hero";
 			HeroManager hero = newHero.GetComponent<HeroManager>();
 			Arr_characterManager.Add(hero);
 		}

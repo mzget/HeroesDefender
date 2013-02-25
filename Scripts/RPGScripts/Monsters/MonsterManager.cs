@@ -53,12 +53,12 @@ public class MonsterManager : Base_CharacterBeh {
 
 	protected override void OnTouchDown ()
 	{
-		this.currentCharacterStatus = CharacterStatus.Active;
+		this.currentCharacterStatus = CharacterState.Active;
 		this.hp_bar_status.SetActive (true);
 		
-		foreach (HeroManager item in CharacterManager.Arr_characterManager) {
+		foreach (MonsterManager item in WaveManager.Arr_monsterManager) {
 			if(item != this) {
-				item.currentCharacterStatus = CharacterStatus.Idle;
+				item.currentCharacterStatus = CharacterState.Idle;
 				item.hp_bar_status.SetActive(false);
 			}	
 		}

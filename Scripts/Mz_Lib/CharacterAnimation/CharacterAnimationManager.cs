@@ -20,18 +20,18 @@ public class CharacterAnimationManager : MonoBehaviour {
 	// Use this for initialization
     void Start()
     {
-
+		animatedSprite = this.gameObject.GetComponent<tk2dAnimatedSprite>();
     }
 	
 	// Update is called once per frame
-	void Update () {
-        timer += Time.deltaTime;
-        if (timer >= 4) {
-            timer = 0;
-
-            this.PlayAnimationByName(NameAnimationsList.Idle);
-        }
-	}
+//	void Update () {
+//        timer += Time.deltaTime;
+//        if (timer >= 4) {
+//            timer = 0;
+//
+//            this.PlayAnimationByName(NameAnimationsList.Idle);
+//        }
+//	}
 
 	public void PlayAnimationByName(NameAnimationsList nameAnimation) {
 		animatedSprite.Play(nameAnimation.ToString());

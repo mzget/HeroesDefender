@@ -101,7 +101,9 @@ public class Mz_BaseScene : MonoBehaviour {
 	{
 		Debug.Log("Mz_BaseScene :: Initialization");
 	}
-	
+
+	#region <@-- Audio Management.
+
 	protected void InitializeAudio()
     {
         //<!-- Setup All Audio Objects.
@@ -162,35 +164,9 @@ public class Mz_BaseScene : MonoBehaviour {
         audioBackground_Obj.audio.mute = !ToggleAudioActive;
         audioDescribe.audio.mute = !ToggleAudioActive;
     }
-
-    //<!--- GUI_identity.
-    public GameObject identityGUI_obj;
-    public tk2dTextMesh usernameTextmesh;
-    public tk2dTextMesh shopnameTextmesh;
-    public tk2dTextMesh availableMoney;
-    protected IEnumerator InitializeIdentityGUI()
-    {
-        if (Mz_StorageManage.Username != string.Empty)
-        {
-            usernameTextmesh.text = Mz_StorageManage.Username;
-            usernameTextmesh.Commit();
-
-            shopnameTextmesh.text = Mz_StorageManage.ShopName;
-            shopnameTextmesh.Commit();
-
-            availableMoney.text = Mz_StorageManage.AvailableMoney.ToString();
-            availableMoney.Commit();
-        }
-
-        yield return null;
-    }
-   
-	internal void ReFreshAvailableMoney()
-	{
-		this.availableMoney.text = Mz_StorageManage.AvailableMoney.ToString();
-		this.availableMoney.Commit();
-	}
     
+	#endregion
+
     /// <summary>
     /// Virtual method. Used to generate game effect at runtime.
     /// Override this and implement your derived class.
@@ -295,6 +271,7 @@ public class Mz_BaseScene : MonoBehaviour {
             }
         }
     }
+
 	protected virtual void MovingCameraTransform ()	{ }
 
     public virtual void OnInput(string nameInput) {
