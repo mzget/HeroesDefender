@@ -12,7 +12,10 @@ public class HeroManager : Base_CharacterBeh {
 	private float distanceToTarget;
 
 
-	void Awake() {
+	protected override void Awake ()
+	{
+		base.Awake ();
+
 		iTween.Init (this.gameObject);
 		iTween.Defaults.easeType = iTween.EaseType.linear;
 	}
@@ -24,6 +27,7 @@ public class HeroManager : Base_CharacterBeh {
 		
 		maxHP = 1000;
 		hp = maxHP;
+		base.InitailizeHUDData ();
 		this.gameObject.name = name;
 	}
 
@@ -162,31 +166,21 @@ public class HeroManager : Base_CharacterBeh {
 	
 	void OnTriggerEnter (Collider collider)
 	{
-		if (collider.tag == "Monster") {
-			if (targetEnemy == null) {
-				targetEnemy = collider.gameObject;
-				if (this.animState != AnimationState.attack) {
-					this.animState = AnimationState.attack;
-					this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
-					this.animatedSprite.animationCompleteDelegate = (sprite, clipId) => {
-						if(this.animState != AnimationState.walk) {
-							targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
-							this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
-						}
-					}; 
-				}   
-			}
-		
-			Debug.Log ("HeroManager => " + collider.tag);
-		}
+
 	}
 	
 	void OnTriggerStay(Collider collider)
 	{
-//		if (collider.tag == "Monster")
-//		{
-//			_IsStayWithMonster = true;
-//		}
+		if (collider.tag == "Monster") {
+			if (targetEnemy == null) {
+				targetEnemy = collider.gameObject;
+			}
+			if(animState != AnimationState.attack) {
+				this.animState = AnimationState.attack;
+				this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+				this.animatedSprite.animationCompleteDelegate += Handle_attackAnimationComplete; 
+			}
+		}
 	}
 	
 	void OnTriggerExit(Collider collider)
@@ -194,59 +188,27 @@ public class HeroManager : Base_CharacterBeh {
 		if (collider.tag == "Monster")
         {
             targetEnemy = null;
-            if (animState != AnimationState.walk)
+            if (animState != AnimationState.attack || animState != AnimationState.dead)
             {
-                this.animState = AnimationState.walk;
-                this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Walk);
+                this.animState = AnimationState.idle;
+                this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Idle);
             }
 		}
 	}
 	
 	#endregion
 
-	/**
-    void OnGUI()
-    {
-        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, Screen.height/Main.FixedGameHeight, 1));
+	public void Handle_attackAnimationComplete(tk2dAnimatedSprite sprite, int clipId) {
+		this.animatedSprite.animationCompleteDelegate -= Handle_attackAnimationComplete;
+		this.animState = AnimationState.idle;
+		targetEnemy.SendMessage("ReceiveDamage", 50f, SendMessageOptions.DontRequireReceiver);
+	}
 
-        GUI.BeginGroup(new Rect(0, 0, 300, 100));
-        {
-            GUI.Box(new Rect(0, 0, 60, 60), new GUIContent(hero_icon, "Icon"), GUIStyle.none);
+	protected override void Handle_deadAnimationComplete (tk2dAnimatedSprite sprite, int clipId)
+	{
+		base.Handle_deadAnimationComplete (sprite, clipId);
 
-            /// HP Management.
-            hpBarScale = hp * 320f / maxHP;
-            if (hp > 2 * (maxHP / 3))
-            {
-                GUI.Box(new Rect(60, 0, hpBarScale, 12), new GUIContent(hp.ToString() + "/" + maxHP.ToString(), "HP"), heroSkin.customStyles[0]);
-            }
-            else if (hp > maxHP / 3 && hp <= 2 * (maxHP / 3))
-            {
-                GUI.Box(new Rect(60, 0, hpBarScale, 12), new GUIContent(hp.ToString() + "/" + maxHP.ToString(), "HP"), heroSkin.customStyles[1]);
-            }
-            else
-            {
-                GUI.Box(new Rect(60, 0, hpBarScale, 12), new GUIContent(hp.ToString() + "/" + maxHP.ToString(), "HP"), heroSkin.customStyles[2]);
-            }
-
-            /// MP Management.
-            GUI.Box(new Rect(60, 12.5f, 300, 12), new GUIContent("256 / 256", "MP"), heroSkin.customStyles[3]);
-
-            //            GUI.BeginGroup(new Rect(85, 45, 125, 60), GUIContent.none, mainInterface.box);
-            //            {
-            //
-            //            }
-            //            GUI.EndGroup();
-
-            //            GUI.BeginGroup(new Rect(215, 50, 185, 50), GUIContent.none, mainInterface.box);
-            //            {
-            //                GUI.Box(new Rect(5, 5, 40, 40), "Q");
-            //                GUI.Box(new Rect(50, 5, 40, 40), "W");
-            //                GUI.Box(new Rect(95, 5, 40, 40), "E");
-            //                GUI.Box(new Rect(140, 5, 40, 40), "R");
-            //            }
-            //            GUI.EndGroup();
-        }
-        GUI.EndGroup();
-    }
-	**/
+		CharacterManager.Arr_characterManager.Remove (this);
+		Destroy (this.gameObject);
+	}
 }

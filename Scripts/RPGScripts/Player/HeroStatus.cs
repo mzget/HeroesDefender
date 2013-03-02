@@ -59,8 +59,7 @@ public class HeroStatus : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		level = PlayerPrefs.GetInt(saveGameSlot + "level");
-		experience = PlayerPrefs.GetInt(saveGameSlot + "exp");		
+
 	}
 	
 	// Update is called once per frame

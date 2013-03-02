@@ -17,11 +17,11 @@ public class WaveManager : MonoBehaviour {
 	private float [] zAxis = new float[] { -3f, -4f, -5f, -6f, -7f};
 	private int [,] wavePattern = new int[,] 
 	{
-		{1 ,0 ,1 ,0 ,1 ,1 ,1 ,1 },
-		{1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 },
-		{0 ,0 ,0 ,0 ,0 ,1 ,1 ,1	},	
-		{0 ,0 ,5 ,0 ,0 ,1 ,1 ,1 },
-		{0 ,0 ,0 ,0 ,0 ,1 ,1 ,1	}
+		{0 ,1 ,0 ,0 ,0 ,1 ,0 ,1 },
+		{0 ,1 ,0 ,0 ,1 ,0 ,1 ,0 },
+		{1 ,0 ,0 ,0 ,1 ,1 ,1 ,1	},	
+		{0 ,0 ,1 ,1 ,0 ,1 ,0 ,0 },
+		{0 ,0 ,0 ,1 ,1 ,0 ,1 ,1	}
 	};			
 	public int [,] WavePattern
    	{
@@ -73,7 +73,8 @@ public class WaveManager : MonoBehaviour {
 						if(pattern[i,j]!=0){
 							GameObject updateEnemy = GameObject.Find("Enemy"+((arrWidth*j)+i));
 //							updateEnemy.transform.Translate(EnemySpeed,0f,0f);
-							updateEnemy.GetComponent<MonsterManager>().StartWalking();
+							if(updateEnemy)
+								updateEnemy.GetComponent<MonsterManager>().StartWalking();
 						}
 					}
 					index++;

@@ -3,10 +3,8 @@ using System.Collections;
 
 public class MonsterManager : Base_CharacterBeh {
 
-	public bool _isAlive = true;
 	private bool _isStarting = false;
-	
-	private Vector2 hpBarSize;
+
 //    private AIMonster aiMonster;
 //	private IDMonster idMonster;
 	
@@ -16,7 +14,10 @@ public class MonsterManager : Base_CharacterBeh {
 	{
 		base.Start ();
 
-		this._isAlive = true;
+		maxHP = 300;
+		hp = maxHP;
+		base.InitailizeHUDData ();
+
 		this.animState = AnimationState.idle;
 		this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Idle);
 
@@ -82,81 +83,52 @@ public class MonsterManager : Base_CharacterBeh {
 	
 	void OnTriggerEnter (Collider coll)
 	{
-		if (coll.tag == "Hero" || coll.tag == "Unit") {
-			if(this.gameObject.tag == "Unit") {
-				// Ignore.
-			}
-			else {
-				if (targetEnemy == null) {
-					targetEnemy = coll.gameObject;
-					if (this.animState != AnimationState.attack) {
-						this.animState = AnimationState.attack;
-						this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
-						this.animatedSprite.animationCompleteDelegate = (sprite, clipId) => {
-							if(targetEnemy) {
-								targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
-								this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
-							}
-						}; 
-					}   
-				}
-			}
-			
-			Debug.Log (coll.tag);
-		}
+//		if (coll.tag == "Hero" || coll.tag == "Unit") {
+//			if(this.gameObject.tag == "Unit") {
+//				// Ignore.
+//			}
+//			else {
+//				if (targetEnemy == null) {
+//					targetEnemy = coll.gameObject;
+//					if (this.animState != AnimationState.dead) {
+//						this.animState = AnimationState.attack;
+//						this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+//						this.animatedSprite.animationCompleteDelegate = (sprite, clipId) => {
+//							if(targetEnemy) {
+//								targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
+//								this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+//							}
+//						}; 
+//					}   
+//				}
+//			}
+//			
+//			Debug.Log (coll.tag);
+//		}
 	}
 	
-	void OnTriggerStay(Collider collider)
+	void OnTriggerStay(Collider coll)
 	{
-		//		if (collider.tag == "Monster")
-		//		{
-		//			_IsStayWithMonster = true;
-		//		}
 	}
 	
 	void OnTriggerExit (Collider collider)
-		{
-		if (collider.tag == "Hero") {
-			targetEnemy = null;
-			if(animState != AnimationState.walk) {
-				this.animState = AnimationState.walk;
-				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Walk);
-			}
-		}
-		else if (collider.tag == "Monster")
-		{
-		}
+	{
+//		if (collider.tag == "Hero" || collider.tag == "Unit") {
+//			targetEnemy = null;
+//			if(animState != AnimationState.dead || animState != AnimationState.attack) {
+//				this.animState = AnimationState.walk;
+//				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Walk);
+//			}
+//		}
 	}
 	
 	#endregion
 
-    /// <summary>
-    /// HookUp By Simple Event.
-    /// </summary>
-    public void ShowMonsterName()
-    {
-//        textMeshName.text = idMonster.fixName;
-//        textMeshName.transform.position = this.gameObject.transform.position + Vector3.up * ((this.animationSprite.size.y/2) + 40);
+	protected override void Handle_deadAnimationComplete (tk2dAnimatedSprite sprite, int clipId)
+	{
+		base.Handle_deadAnimationComplete (sprite, clipId);
 
-//        /// Set PowerBar Position.
-//        hpBar_Ins.active = true;
-//        powerBar_Ins.active = true;
-//        powerBarSprite.transform.position = this.transform.position + new Vector3(0, (this.animationSprite.size.y/2) + 20, 0);
-//        hpBarSprite.transform.position = this.transform.position + new Vector3(-50, (this.animationSprite.size.y/2) + 20, 0);
-    }
-	
-    public void ReceiveDamage(int r_Damage)
-    {
-//    	idMonster.hp -= r_Damage;
-        SetHealth();
-    }
-
-    private void SetHealth()
-    {
-//        if (hpBarSprite)
-//        {
-//            float hpBarScale = idMonster.hp * 100f / idMonster.maxHP;
-//            hpBarSprite.size = new Vector2(hpBarScale, hpBarSprite.size.y);
-//        }
-    }
+		WaveManager.Arr_monsterManager.Remove (this);
+		Destroy (this.gameObject);
+	}
 }

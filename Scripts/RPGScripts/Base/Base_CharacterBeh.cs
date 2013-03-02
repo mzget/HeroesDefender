@@ -2,11 +2,12 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(CharacterAnimationManager))]
-public class Base_CharacterBeh : Base_ObjectBeh {
+public class Base_CharacterBeh : ObjectsBeh {
 	
 	public enum CharacterState {
 		Idle = 0,
 		Active,
+		Dead,
 	};
 	public CharacterState currentCharacterStatus;
 
@@ -39,16 +40,16 @@ public class Base_CharacterBeh : Base_ObjectBeh {
 
 //	protected GameObject nameBar;
 	protected tk2dTextMesh hp_textmesh;
-	protected tk2dAnimatedSprite animatedSprite;
 	protected CharacterAnimationManager animationManager;
 
 
 	// Use this for initialization
-	protected virtual void Start ()
+	protected override void Start ()
 	{
+		base.Start ();
+
 		if (stageManager == null) {
-			GameObject gameController = GameObject.FindGameObjectWithTag ("GameController");
-			stageManager = gameController.GetComponent<BattleStage> ();
+			stageManager = baseScene.GetComponent<BattleStage> ();
 		}
 				
 		if (animatedSprite == null)
@@ -71,6 +72,11 @@ public class Base_CharacterBeh : Base_ObjectBeh {
 		hp_textmesh = hp_textmesh_transform.gameObject.GetComponent<tk2dTextMesh>();
 
 		yield return null;
+	}
+
+	protected void InitailizeHUDData() {
+		hp_textmesh.text = hp.ToString() + "/" + maxHP.ToString();
+		hp_textmesh.Commit();	
 	}
 
 	internal void UnActiveHpbar() {
@@ -116,5 +122,18 @@ public class Base_CharacterBeh : Base_ObjectBeh {
 				UnActiveHpbar();
 			}
 		}
+
+		if (hp <= 0) {
+			if(this.currentCharacterStatus != CharacterState.Dead) {
+				this.currentCharacterStatus = CharacterState.Dead;
+				this.animState = AnimationState.dead;
+				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Dead);
+				this.animatedSprite.animationCompleteDelegate += Handle_deadAnimationComplete;
+			}
+		}
+	}
+
+	protected virtual void Handle_deadAnimationComplete(tk2dAnimatedSprite sprite, int clipId) { 
+		this.animatedSprite.animationCompleteDelegate -= Handle_deadAnimationComplete;	
 	}
 }
