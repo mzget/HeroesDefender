@@ -61,7 +61,7 @@ public class ObjectsBeh : Base_ObjectBeh {
             screenPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
 
-        this.transform.position = new Vector3(screenPoint.x, screenPoint.y, -6f);
+        this.transform.position = new Vector3(screenPoint.x, screenPoint.y, -20f);
 	}
 	
 	// Update is called once per frame
@@ -74,28 +74,38 @@ public class ObjectsBeh : Base_ObjectBeh {
 				this.ImplementDraggableObject();
 			}
 
-            if (baseScene.touch.phase == TouchPhase.Ended || baseScene.touch.phase == TouchPhase.Canceled)
-            {			
-				if(this._isDraggable)
-					_isDropObject = true;
+			if(Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer) {
+				if(Input.touchCount > 0) {
+					if (Input.GetTouch(0).phase == TouchPhase.Ended || Input.GetTouch(0).phase == TouchPhase.Canceled)
+		            {			
+						if(this._isDraggable)
+							_isDropObject = true;
+					}
+				}
+			}
+			else if(Application.isWebPlayer || Application.isEditor) {
+				if(Input.GetMouseButtonUp(0)) {
+					if(this._isDraggable)
+						_isDropObject = true;
+				}
 			}
 		}
 	}
 	
     protected override void OnTouchDrag()
-    {
-        base.OnTouchDrag();
-        
-        if(this._canDragaable && base._OnTouchBegin) {
+	{
+		if(this._canDragaable && base._OnTouchBegin) {
 			this._isDraggable = true;
-        }
+		}
+
+        base.OnTouchDrag();
     }
 	
 	protected override void OnTouchEnded ()
 	{
-		base.OnTouchEnded();
-		
 		if(this._isDraggable)
 			_isDropObject = true;
+
+		base.OnTouchEnded();
 	}
 }

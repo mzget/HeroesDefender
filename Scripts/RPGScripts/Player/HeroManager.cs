@@ -8,9 +8,8 @@ public class HeroManager : Base_CharacterBeh {
     public Texture2D hero_icon;
 
 	private Vector3 targetPos;
-	private float speed = 20;
+	private float speed = 20f;
 	private float distanceToTarget;
-	private bool _IsStayWithMonster;
 
 
 	void Awake() {
@@ -73,7 +72,8 @@ public class HeroManager : Base_CharacterBeh {
 			
 			if (Physics.Raycast (ray, out rayHit)) {
 				if (rayHit.collider.tag == "WalkingTable" || rayHit.collider.tag == "Monster") {					
-					if (this.currentCharacterStatus == CharacterState.Active) {							//<@-- Walk to mouse position or touch position.
+					if (this.currentCharacterStatus == CharacterState.Active) {
+						//<@-- Walk to mouse position or touch position.
 //						if (Input.touchCount >= 1)
 //							targetPos = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position);
 //						else 
@@ -102,12 +102,32 @@ public class HeroManager : Base_CharacterBeh {
 					}
 				}
 			}
+			
+			if (this.currentCharacterStatus == CharacterState.Active && this.animState == AnimationState.walk)
+			{
+				if (targetEnemy == null)
+					iTween.MoveTo(this.gameObject, targetPos, distanceToTarget / speed);
+//				{
+//					distanceToTarget = Vector2.Distance(this.transform.position, targetEnemy.transform.position);
+//					float time = distanceToTarget / speed;
+//					iTween.MoveUpdate(this.gameObject, targetPos, time);
+//					print(time);
+//				}
+//				else {
+//					iTween.MoveTo(this.gameObject, targetPos, distanceToTarget / speed);
+//				}
+//			    this.transform.position = Vector3.Lerp (this.transform.position, targetPos, 1f );
+			}
 		}
 		
-		if (this.currentCharacterStatus == CharacterState.Active && this.animState == AnimationState.walk) {
-			iTween.MoveUpdate (this.gameObject, iTween.Hash ("position", targetPos, "time", distanceToTarget / speed));
-//			Vector3 newPosition = new Vector3 (targetPos.x, targetPos.y, targetPos.z);
-//			this.transform.position = Vector3.Lerp (this.transform.position, newPosition, Time.deltaTime * speed);
+		if(this.currentCharacterStatus == CharacterState.Active && this.animState == AnimationState.walk) {
+			if (targetEnemy)
+			{
+				distanceToTarget = Vector2.Distance(this.transform.position, targetEnemy.transform.position);
+				float time = distanceToTarget / speed;
+				iTween.MoveUpdate(this.gameObject, targetPos, time);
+				print(time);
+			}
 
 			float remain_distance = Vector2.Distance (this.transform.position, targetPos);
 			if (remain_distance < 1) {
@@ -149,13 +169,15 @@ public class HeroManager : Base_CharacterBeh {
 					this.animState = AnimationState.attack;
 					this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
 					this.animatedSprite.animationCompleteDelegate = (sprite, clipId) => {
-						targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
-						this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+						if(this.animState != AnimationState.walk) {
+							targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
+							this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+						}
 					}; 
 				}   
 			}
 		
-			Debug.Log (collider.tag);
+			Debug.Log ("HeroManager => " + collider.tag);
 		}
 	}
 	
@@ -170,8 +192,13 @@ public class HeroManager : Base_CharacterBeh {
 	void OnTriggerExit(Collider collider)
 	{
 		if (collider.tag == "Monster")
-		{
-			_IsStayWithMonster = false;
+        {
+            targetEnemy = null;
+            if (animState != AnimationState.walk)
+            {
+                this.animState = AnimationState.walk;
+                this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Walk);
+            }
 		}
 	}
 	

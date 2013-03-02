@@ -5,11 +5,9 @@ public class Mz_LoadingScreen : MonoBehaviour
 {
     //private GameObject backGroundIns, loadingAnimatedIns = null;
 
-    public static string LoadSceneName { get; set; }
+    public static string TargetSceneName { get; set; }
 
-    //private int countTex = 0;
-	private bool _haveDisk = true;
-	private AsyncOperation async;
+//	private AsyncOperation async;
 
     public GameObject loading_background_sprite;
     private GUIStyle loadingGUISkin;
@@ -19,44 +17,48 @@ public class Mz_LoadingScreen : MonoBehaviour
 	/// <summary>
 	/// Start this instance.
 	/// </summary>
-    IEnumerator Start()
+    void Start()
 	{
         Time.timeScale = 1f;
-		Resources.UnloadUnusedAssets();
-
-//        Mz_ResizeScale.ResizingScale(loading_background_sprite.transform);
+//		Resources.UnloadUnusedAssets ();
+		Mz_ResizeScale.ResizingScale(loading_background_sprite.transform);
 		
-#if UNITY_STANDALONE_WIN 
-            //async = DatVistaData.LoadLevelAsync(sceneName);
+		if(Application.isLoadingLevel == false) {
+			Application.LoadLevel(TargetSceneName);
+		}
+		
+#if UNITY_STANDALONE_WIN
 
-            //if(DatVistaData.IsLoadLevelCheckVista) {
-            //    while (!async.isDone) {
-            //        yield return 0;
-            //    }
-            //}
-            //else {
-            //    /// Show Insert Disk.
-            //    _haveDisk = false;
-            //}
+	    //async = DatVistaData.LoadLevelAsync(sceneName);
 
-            //<!!!!! WARNING...
-            //<!-- FOR DEBUG ONLY.
-            async = Application.LoadLevelAsync(LoadSceneName);
-            if (Application.isLoadingLevel) {
-                while (async.isDone == false) {
-                    yield return 0;
-                }
-            }
+	    //if(DatVistaData.IsLoadLevelCheckVista) {
+	    //    while (!async.isDone) {
+	    //        yield return 0;
+	    //    }
+	    //}
+	    //else {
+	    //    /// Show Insert Disk.
+	    //    _haveDisk = false;
+	    //}
+
+	    //<!!!!! WARNING...
+	    //<!-- FOR DEBUG ONLY.
+	    async = Application.LoadLevelAsync(LoadSceneName);
+	    if (Application.isLoadingLevel) {
+	        while (async.isDone == false) {
+	            yield return 0;
+	        }
+	    }
 
 #elif UNITY_IPHONE || UNITY_ANDROID || UNITY_FLASH || UNITY_WEBPLAYER
 	
-        async = Application.LoadLevelAsync(LoadSceneName);
-		if(Application.isLoadingLevel) {
-			while(async.isDone == false) {
-				yield return 0;
-			}
-		}
-		
+//        async = Application.LoadLevelAsync(LoadSceneName);
+//		if(Application.isLoadingLevel) {
+//			while(async.isDone == false) {
+//				yield return 0;
+//			}
+//		}
+
 #endif	
     }
 
@@ -68,30 +70,15 @@ public class Mz_LoadingScreen : MonoBehaviour
         loadingGUISkin = GUI.skin.label;
         loadingGUISkin.font = loadingFont;
         loadingGUISkin.alignment = TextAnchor.MiddleCenter;
-        loadingGUISkin.fontSize = 24;
+        loadingGUISkin.fontSize = 32;
         loadingGUISkin.normal.textColor = Color.white;
-		
-        if (_haveDisk)
-        {
-            //<<!--- Have Disk is True, Show Loading Animation. 
-            float process = 0;
-            if(async != null)
-               process = async.progress * 100f;
 
-            GUI.Box(new Rect(Main.GAMEWIDTH - 320, Main.GAMEHEIGHT - 64, 300, 50), "Loading... " + process.ToString("F1") + " %", loadingGUISkin);
-        }
-        else
-        {
-            /// Have Disk is false.
-            GUI.BeginGroup(new Rect(Main.GAMEWIDTH / 2 - 150, Main.GAMEHEIGHT / 2 - 75, 300, 150));
-            {
-                GUI.Box(new Rect(0, 0, 300, 150), "Please insert disk ! \n \n กรุณาใส่แผ่นดิกส์", loadingGUISkin);
+	    //<<!---  Show Loading progress. 
+//	    float process = 0;
+//	    if(async != null)
+//	       process = async.progress * 100f;
+//	    GUI.Box(new Rect(Main.GAMEWIDTH - 320, Main.GAMEHEIGHT - 64, 300, 50), "Loading... " + process.ToString("F1") + " %", loadingGUISkin);
 
-                if (GUI.Button(new Rect(245, 5, 50, 30), "Exit", GUI.skin.button)) {
-                    Application.Quit();                
-				}
-            }
-            GUI.EndGroup();
-        }
+		GUI.Box(new Rect(Main.GAMEWIDTH - 320, Main.GAMEHEIGHT - 64, 300, 50), "Loading... ", loadingGUISkin);
     }
 }

@@ -57,14 +57,44 @@ public class Tile : MonoBehaviour {
         this.sprite.color = Color.white;
     }
 
-    internal static bool CheckedTileStatus(TileArea area) {
+	public static bool CheckingOrthographicTileStatus (TileArea area)
+	{
+		if(area.x + area.numSlotWidth > OrthographicTilemapEngine.x || area.y < 0 || area.y + area.numSlotHeight > OrthographicTilemapEngine.y)
+			return false;
+		
+		bool _canCreateBuilding = true;
+		
+		for(int i = 0; i < area.numSlotWidth;i++) {
+			for (int j = 0; j < area.numSlotHeight ; j++)
+			{
+				int newX = area.x + i;
+				int newY = area.y + j;
+				Arr_BuildingAreas[newX, newY]._isShowStatus = true;
+				Arr_BuildingAreas[newX, newY].currentTileAbility = TileAbility.ShowStatus;
+				
+				if (Arr_BuildingAreas[newX, newY].tileState == TileStatus.Empty)
+				{
+					Arr_BuildingAreas[newX, newY].sprite.color = Color.green;
+				}
+				else if (Arr_BuildingAreas[newX, newY].tileState == TileStatus.NoEmpty)
+				{
+					Arr_BuildingAreas[newX, newY].sprite.color = Color.red;
+					_canCreateBuilding = false;
+				}
+			}
+		}
+		
+		return _canCreateBuilding;
+	}
+
+    internal static bool CheckedIsomatricTileStatus(TileArea area) {
 		if(area.x + area.numSlotWidth > IsometricEngine.x || area.y < 0)
 			return false;
 
         bool _canCreateBuilding = true;
  
         for(int i = 0; i < area.numSlotWidth;i++) {
-            for (int j = 0; j < area.numSlotHeight ; j++)
+			for (int j = 0; j < area.numSlotHeight ; j++)
 			{
                 int newX = area.x + i;
                 int newY = area.y + j;

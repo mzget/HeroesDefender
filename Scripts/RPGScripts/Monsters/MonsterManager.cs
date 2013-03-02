@@ -17,6 +17,8 @@ public class MonsterManager : Base_CharacterBeh {
 		base.Start ();
 
 		this._isAlive = true;
+		this.animState = AnimationState.idle;
+		this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Idle);
 
 //		aiMonster = this.gameObject.GetComponent<AIMonster>();
 //		idMonster = this.gameObject.GetComponent<IDMonster>();
@@ -80,23 +82,27 @@ public class MonsterManager : Base_CharacterBeh {
 	
 	void OnTriggerEnter (Collider coll)
 	{
-		if (coll.tag == "Hero") {
-			if (targetEnemy == null) {
-				targetEnemy = coll.gameObject;
-				if (this.animState != AnimationState.attack) {
-					this.animState = AnimationState.attack;
-					this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
-					this.animatedSprite.animationCompleteDelegate = (sprite, clipId) => {
-						targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
+		if (coll.tag == "Hero" || coll.tag == "Unit") {
+			if(this.gameObject.tag == "Unit") {
+				// Ignore.
+			}
+			else {
+				if (targetEnemy == null) {
+					targetEnemy = coll.gameObject;
+					if (this.animState != AnimationState.attack) {
+						this.animState = AnimationState.attack;
 						this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
-					}; 
-				}   
+						this.animatedSprite.animationCompleteDelegate = (sprite, clipId) => {
+							if(targetEnemy) {
+								targetEnemy.SendMessage("ReceiveDamage", 10f, SendMessageOptions.DontRequireReceiver);
+								this.animationManager.PlayAnimationByName (CharacterAnimationManager.NameAnimationsList.Attack);
+							}
+						}; 
+					}   
+				}
 			}
 			
 			Debug.Log (coll.tag);
-		}
-		else if(coll.tag == "Monster") {
-
 		}
 	}
 	
@@ -108,9 +114,16 @@ public class MonsterManager : Base_CharacterBeh {
 		//		}
 	}
 	
-	void OnTriggerExit(Collider collider)
-	{
-		if (collider.tag == "Monster")
+	void OnTriggerExit (Collider collider)
+		{
+		if (collider.tag == "Hero") {
+			targetEnemy = null;
+			if(animState != AnimationState.walk) {
+				this.animState = AnimationState.walk;
+				this.animationManager.PlayAnimationByName(CharacterAnimationManager.NameAnimationsList.Walk);
+			}
+		}
+		else if (collider.tag == "Monster")
 		{
 		}
 	}

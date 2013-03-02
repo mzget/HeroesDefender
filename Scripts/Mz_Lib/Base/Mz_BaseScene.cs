@@ -5,8 +5,9 @@ using System.Collections.Generic;
 
 public class Mz_BaseScene : MonoBehaviour {
     
-    public enum SceneNames { none = 0, LoadingScene = 1, MainMenu, WaitForStart, Town, Shop, Sheepbank, Dressing, DisplayReward, };
-	
+    public enum ScenesInstance { none = 0, LoadingScene = 1, MainMenu, WaitForStart, BattleStage, };
+	public bool _isPauseGameplay = false;
+
     //<!-- Audio Manage.
     protected static bool ToggleAudioActive = true;
     public GameEffectManager gameEffectManager;
@@ -16,8 +17,6 @@ public class Mz_BaseScene : MonoBehaviour {
     public AudioClip background_clip;
     public List<AudioClip> description_clips = new List<AudioClip>();
     public List<AudioClip> soundEffect_clips = new List<AudioClip>();
-//  public List<AudioClip> appreciate_Clips = new List<AudioClip>();
-//	public List<AudioClip> warning_Clips = new List<AudioClip>();
 	
 	#region <@-- Detect Touch and Input Data Fields.
 
@@ -29,7 +28,7 @@ public class Mz_BaseScene : MonoBehaviour {
 	private Vector3 currentCameraPos = new Vector3(0, 0f, -100f);
     public bool _isDragMove = false;
 	internal Mz_SmartDeviceInput smartDeviceInput;
-	public ExtendsStorageManager extendsStorageManager = new ExtendsStorageManager();
+	public ExtendSaveManager extendsStorageManager = new ExtendSaveManager();
 	private HUDFPS hudFPS_Trace;
 
 	#endregion
@@ -195,7 +194,7 @@ public class Mz_BaseScene : MonoBehaviour {
 		if (HasChangeTimeScale_Event != null) 
 				HasChangeTimeScale_Event (this, e);
 	}
-	protected void UpdateTimeScale(int delta) {
+	public void UpdateTimeScale(int delta) {
 		Time.timeScale = delta;
 		OnChangeTimeScale(EventArgs.Empty);
 	}
@@ -252,7 +251,7 @@ public class Mz_BaseScene : MonoBehaviour {
             if (Input.GetMouseButtonDown(0))
             {
                 originalPos = mousePos;
-                //Debug.Log("originalPos == " + originalPos);
+				return;
             }
 
             if (Input.GetMouseButton(0))
@@ -260,7 +259,6 @@ public class Mz_BaseScene : MonoBehaviour {
                 currentPos = mousePos;
                 _isDragMove = true;
                 this.MovingCameraTransform();
-                //Debug.Log("currentPos == " + currentPos);
             }
 
             if (Input.GetMouseButtonUp(0))

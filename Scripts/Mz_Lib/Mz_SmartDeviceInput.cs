@@ -34,7 +34,6 @@ public class Mz_SmartDeviceInput : MonoBehaviour {
 				if(Physics.Raycast(cursorRay, out hit)) {
 					hit.collider.SendMessage("OnTouchEnded", SendMessageOptions.DontRequireReceiver);
 				}	
-
 				return;
 			}
 			

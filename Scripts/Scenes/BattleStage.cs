@@ -12,9 +12,11 @@ public class TownTutorDataStore {
 public class BattleStage : Mz_BaseScene {
 
 	public GameObject backgroup_group_transform;
-	private bool _updatable = true;
+	internal bool _updatable = true;
 
 	public OrthographicTilemapEngine tilemapEngine;
+
+	public TaskManager taskManager;
 
 	#region <@-- Event Handles Data section.
 
@@ -36,7 +38,10 @@ public class BattleStage : Mz_BaseScene {
 	// Use this for initialization
 	void Start ()
     {
+		StartCoroutine_Auto (InitializeAudio ());
 		StartCoroutine_Auto(this.InitializeIsoTilemapEngine());
+
+		taskManager = this.gameObject.GetComponent<TaskManager> ();
 	}
 	
 	IEnumerator InitializeIsoTilemapEngine ()
@@ -126,12 +131,27 @@ public class BattleStage : Mz_BaseScene {
     /// <!-- Gui region.
     /// </summary>
     private void OnGUI() {
-        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, Screen.height / Main.GAMEHEIGHT, 1));    
+        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, Screen.height / Main.GAMEHEIGHT, 1));
+		
+		if (_hasQuitCommand)
+		{			
+			GUI.BeginGroup(new Rect(Screen.width / 2 - (200 * Mz_OnGUIManager.Extend_heightScale), Main.GAMEHEIGHT / 2 - 100, 400 * Mz_OnGUIManager.Extend_heightScale, 200), "Do you want to quit ?", GUI.skin.window);
+			{
+				if (GUI.Button(new Rect(60 * Mz_OnGUIManager.Extend_heightScale, 155, 100 * Mz_OnGUIManager.Extend_heightScale, 40), "Yes"))
+					Application.Quit();
+				else if (GUI.Button(new Rect(240 * Mz_OnGUIManager.Extend_heightScale, 155, 100 * Mz_OnGUIManager.Extend_heightScale, 40), "No")) {
+					_hasQuitCommand = false; 
+				}
+			}
+			GUI.EndGroup();
+		}    
     }
 
 	public override void OnInput (string nameInput)
 	{
-
+		if (nameInput == "Menu_button" || nameInput == "Reset_button" || nameInput == "MainMenu_button") {
+			taskManager.HandleOnInput(ref nameInput);
+		}
 	}
 
     public override void OnDispose()
@@ -139,4 +159,26 @@ public class BattleStage : Mz_BaseScene {
         base.OnDispose();
         //<!-- Clear static NumberOfCanSellItem.
     }
+
+	public static void OnDisposeStaticData() {
+		WaveManager.Arr_monsterManager.Clear ();
+		CharacterManager.Arr_characterManager.Clear ();
+	}
+
+	public void GotoOtherStage (Mz_BaseScene.ScenesInstance sceneName)
+	{
+		if(Application.isLoadingLevel == false) {
+			BattleStage.OnDisposeStaticData();
+			Resources.UnloadUnusedAssets();
+			Mz_LoadingScreen.TargetSceneName = sceneName.ToString();
+			Application.LoadLevel(Mz_BaseScene.ScenesInstance.LoadingScene.ToString());
+		}
+	}
+	
+	public void CreateUnitOnWalkableArea (string p_name, Vector3 p_position)
+	{
+		GameObject unit = Instantiate (Resources.Load (ResourcePathManager.PATH_OF_UNIT_OBJECTS + "Monster", typeof(GameObject))) as GameObject;
+		unit.transform.position = p_position;
+		unit.gameObject.tag = "Unit";
+	}
 }

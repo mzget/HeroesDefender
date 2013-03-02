@@ -137,8 +137,8 @@ public class Mz_PlayLogoMovie : MonoBehaviour {
 		
 #if UNITY_IPHONE || UNITY_ANDROID
 		if (!Application.isLoadingLevel) {
-            Mz_LoadingScreen.LoadSceneName = Mz_BaseScene.SceneNames.MainMenu.ToString();
-            Application.LoadLevelAsync(Mz_BaseScene.SceneNames.LoadingScene.ToString());
+			Mz_LoadingScreen.TargetSceneName = Mz_BaseScene.ScenesInstance.MainMenu.ToString();
+            Application.LoadLevelAsync(Mz_BaseScene.ScenesInstance.LoadingScene.ToString());
         }
 #endif
     }

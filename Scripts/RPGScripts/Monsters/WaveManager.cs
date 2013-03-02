@@ -10,7 +10,7 @@ public class WaveManager : MonoBehaviour {
 	public int arrWidth;
 	public int arrHeight;
 	public static float EnemySpeed = 0.3f;
-	public const string PATH_OF_ENEMY_01 = "Prototypes/Monsters/Barbarian";
+	public const string PATH_OF_ENEMY_01 = "Prototypes/Monsters/Monster";
 	public bool EnableUpdate = true;
 	
 	private float [] yAxis = new float[] { -16f, -32f, -48f, -64f, -80f};
@@ -86,10 +86,10 @@ public class WaveManager : MonoBehaviour {
 		}
 	}
 	
-	void WaveInit(int [,] pattern, GameObject objGroup){
-		for(int i =0; i < arrWidth ; i++){
-			for(int j=0; j < arrHeight; j++){
-				if(pattern[i,j]!=0){
+	void WaveInit(int [,] pattern, GameObject objGroup) {
+		for(int i =0; i < arrWidth ; i++) {
+			for(int j=0; j < arrHeight; j++) {
+				if(pattern[i,j]!=0) {
 					GameObject clone = Instantiate(Resources.Load(PATH_OF_ENEMY_01, typeof(GameObject))) as GameObject;
 					clone.name = "Enemy"+((arrWidth*j)+i);
 					clone.transform.parent = objGroup.transform;

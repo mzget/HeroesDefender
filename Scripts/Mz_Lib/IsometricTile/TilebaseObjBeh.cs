@@ -15,7 +15,7 @@ public class TilebaseObjBeh : ObjectsBeh {
     public TileArea constructionArea;
     internal virtual bool ShowConstructionAreaStatus()
     {
-        bool canCreateBuilding = Tile.CheckedTileStatus(constructionArea);
+        bool canCreateBuilding = Tile.CheckedIsomatricTileStatus(constructionArea);
 
         return canCreateBuilding;
     }

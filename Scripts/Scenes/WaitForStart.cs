@@ -24,8 +24,8 @@ public class WaitForStart : Mz_BaseScene {
 		
 		if(Input.touchCount > 0 || Input.GetMouseButtonDown(0)) {
            if(Application.isLoadingLevel == false) {
-               Mz_LoadingScreen.LoadSceneName = Mz_BaseScene.SceneNames.MainMenu.ToString();
-               Application.LoadLevel(Mz_BaseScene.SceneNames.LoadingScene.ToString());
+               Mz_LoadingScreen.TargetSceneName = Mz_BaseScene.ScenesInstance.MainMenu.ToString();
+               Application.LoadLevel(Mz_BaseScene.ScenesInstance.LoadingScene.ToString());
            }
        }
 	}
